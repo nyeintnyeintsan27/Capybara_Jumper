@@ -210,13 +210,13 @@
     const GROUND_Y = 335;
 
     // =============================================
-    // ===== ANIMATED CAPYBARA (Sprite Sheet) =====
+    // ===== NEW ANIMATED CAPYBARA (Cute with Flowers) =====
     // =============================================
     const capybara = {
         x: 80,
         y: 300,
-        width: 48,
-        height: 40,
+        width: 60,
+        height: 45,
         vy: 0,
         isJumping: false,
         runFrame: 0,
@@ -238,102 +238,102 @@
                 ctx.rotate(-0.08);
             }
             
-            // ===== Body =====
+            // ===== ပန်းတွေ (Flowers on head) =====
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#FFB6C1';
+            ctx.strokeStyle = '#FF69B4';
+            ctx.lineWidth = 1;
+            this.drawFlower(-8, -24, 5);
+            this.drawFlower(0, -28, 6);
+            this.drawFlower(8, -24, 5);
+            
+            // ===== Body (လုံးလုံးဝိုင်းဝိုင်း) =====
             ctx.shadowColor = 'rgba(0,0,0,0.15)';
             ctx.shadowBlur = 8;
             
-            // Main body
-            ctx.fillStyle = '#8B6B4A';
+            // Main body - ဝိုင်းဝိုင်းစက်စက်
+            ctx.fillStyle = '#C68E4E';
             ctx.beginPath();
-            ctx.ellipse(0, 2, 22, 16, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 4, 24, 18, 0, 0, Math.PI * 2); // width 24, height 18 (အဝိုင်းပုံ)
+            ctx.fill();
+            
+            // အနောက်ဘက် ဝိုင်းနေတဲ့ အပိုင်း (ဖင်ပိုင်း)
+            ctx.fillStyle = '#C68E4E';
+            ctx.beginPath();
+            ctx.ellipse(-12, 4, 12, 18, 0, 0, Math.PI * 2); // အနောက်ဘက်မှာ ထပ်ဆွဲပြီး ဝိုင်းအောင် လုပ်ထား
             ctx.fill();
             
             // Head
-            ctx.fillStyle = '#A67B5B';
+            ctx.fillStyle = '#D7A05B';
             ctx.shadowBlur = 4;
             ctx.beginPath();
-            ctx.ellipse(14, -6, 14, 12, 0.1, 0, Math.PI * 2);
+            ctx.ellipse(12, -10, 16, 14, 0.1, 0, Math.PI * 2);
             ctx.fill();
             
             // Ears
-            ctx.fillStyle = '#A67B5B';
+            ctx.fillStyle = '#D7A05B';
             ctx.shadowBlur = 2;
             ctx.beginPath();
-            ctx.ellipse(8, -16, 5, 8, -0.3, 0, Math.PI * 2);
+            ctx.ellipse(6, -22, 4, 7, -0.3, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.ellipse(18, -16, 5, 8, 0.3, 0, Math.PI * 2);
+            ctx.ellipse(18, -22, 4, 7, 0.3, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.shadowBlur = 0;
             
             // Eyes
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(18, -8, 6, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#1a1a2e';
-            ctx.beginPath();
-            ctx.arc(20, -9, 3.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(21, -10.5, 1.5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Eyebrows (happy)
-            ctx.strokeStyle = '#3d2b1f';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(16, -12, 5, Math.PI, 0);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(24, -12, 5, Math.PI, 0);
-            ctx.stroke();
-            
-            // Nose
-            ctx.fillStyle = '#3d2b1f';
-            ctx.beginPath();
-            ctx.arc(26, -3, 3, 0, Math.PI * 2);
-            ctx.fill();
             ctx.fillStyle = '#2a1a0e';
             ctx.beginPath();
-            ctx.arc(27.5, -3, 1.5, 0, Math.PI * 2);
+            ctx.arc(16, -12, 2.5, 0, Math.PI * 2);
             ctx.fill();
             
-            // Mouth (smile)
-            ctx.strokeStyle = '#3d2b1f';
-            ctx.lineWidth = 1.5;
+            // Nose
+            ctx.fillStyle = '#6B4F3A';
+            ctx.beginPath();
+            ctx.ellipse(25, -4, 6, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#4A3728';
+            ctx.beginPath();
+            ctx.arc(23, -4, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(27, -4, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mouth
+            ctx.strokeStyle = '#4A3728';
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(24, 1, 4, 0.1, 0.6);
             ctx.stroke();
             
             // ===== Legs (running animation) =====
-            ctx.fillStyle = '#6B4F3A';
+            ctx.fillStyle = '#C68E4E';
             ctx.shadowBlur = 4;
             
             if (this.isJumping) {
-                ctx.fillRect(-15, 12, 6, 8);
-                ctx.fillRect(-6, 12, 6, 8);
-                ctx.fillRect(6, 12, 6, 8);
-                ctx.fillRect(15, 12, 6, 8);
+                ctx.fillRect(-15, 14, 7, 10);
+                ctx.fillRect(-5, 14, 7, 10);
+                ctx.fillRect(6, 14, 7, 10);
+                ctx.fillRect(16, 14, 7, 10);
             } else {
                 const legPhase = this.runFrame * 0.2;
                 const legOffset1 = Math.sin(legPhase) * 6;
                 const legOffset2 = Math.sin(legPhase + Math.PI) * 6;
                 
-                ctx.fillRect(-15, 12 + legOffset1, 6, 8);
-                ctx.fillRect(-6, 12 + legOffset2, 6, 8);
-                ctx.fillRect(6, 12 + legOffset2, 6, 8);
-                ctx.fillRect(15, 12 + legOffset1, 6, 8);
+                ctx.fillRect(-15, 14 + legOffset1, 7, 10);
+                ctx.fillRect(-5, 14 + legOffset2, 7, 10);
+                ctx.fillRect(6, 14 + legOffset2, 7, 10);
+                ctx.fillRect(16, 14 + legOffset1, 7, 10);
             }
             
             ctx.shadowBlur = 0;
             
-            // Tail
-            ctx.fillStyle = '#7A5A3A';
+            // Tail (အမြီး - ခန္ဓာကိုယ်ထဲမှာ ပါဝင်နေသလို ဝိုင်းဝိုင်းလေး)
+            ctx.fillStyle = '#C68E4E';
             ctx.beginPath();
-            ctx.ellipse(-22, 4, 6, 4, -0.5, 0, Math.PI * 2);
+            ctx.ellipse(-22, 4, 4, 4, 0, 0, Math.PI * 2); // ဝိုင်းဝိုင်းလေး
             ctx.fill();
             
             ctx.restore();
@@ -357,17 +357,23 @@
                 ctx.ellipse(this.x + this.width/2, this.y + this.height + 6, 16, 4, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
-            
-            // ===== Sweat drops when running =====
-            if (!this.isJumping && this.runFrame % 4 < 2) {
-                ctx.fillStyle = 'rgba(100,200,255,0.2)';
+        },
+
+        drawFlower(x, y, size) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(0, 0, size/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFB6C1';
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2) / 5;
                 ctx.beginPath();
-                ctx.arc(this.x - 12, this.y + 2, 3, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(this.x - 16, this.y + 8, 2, 0, Math.PI * 2);
+                ctx.ellipse(Math.cos(angle) * size, Math.sin(angle) * size, size/1.5, size/2, angle, 0, Math.PI * 2);
                 ctx.fill();
             }
+            ctx.restore();
         },
 
         jump() {
