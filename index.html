@@ -210,7 +210,7 @@
     const GROUND_Y = 335;
 
     // =============================================
-    // ===== NEW ANIMATED CAPYBARA (Cute with Flowers) =====
+    // ===== ANIMATED CAPYBARA (Walking Animation) =====
     // =============================================
     const capybara = {
         x: 80,
@@ -251,16 +251,16 @@
             ctx.shadowColor = 'rgba(0,0,0,0.15)';
             ctx.shadowBlur = 8;
             
-            // Main body - ဝိုင်းဝိုင်းစက်စက်
+            // Main body
             ctx.fillStyle = '#C68E4E';
             ctx.beginPath();
-            ctx.ellipse(0, 4, 24, 18, 0, 0, Math.PI * 2); // width 24, height 18 (အဝိုင်းပုံ)
+            ctx.ellipse(0, 4, 24, 18, 0, 0, Math.PI * 2);
             ctx.fill();
             
             // အနောက်ဘက် ဝိုင်းနေတဲ့ အပိုင်း (ဖင်ပိုင်း)
             ctx.fillStyle = '#C68E4E';
             ctx.beginPath();
-            ctx.ellipse(-12, 4, 12, 18, 0, 0, Math.PI * 2); // အနောက်ဘက်မှာ ထပ်ဆွဲပြီး ဝိုင်းအောင် လုပ်ထား
+            ctx.ellipse(-12, 4, 12, 18, 0, 0, Math.PI * 2);
             ctx.fill();
             
             // Head
@@ -308,32 +308,74 @@
             ctx.arc(24, 1, 4, 0.1, 0.6);
             ctx.stroke();
             
-            // ===== Legs (running animation) =====
+            // ===== Legs (လမ်းလျှောက်ပုံ - ရှေ့နောက် လွှဲ) =====
             ctx.fillStyle = '#C68E4E';
             ctx.shadowBlur = 4;
             
             if (this.isJumping) {
-                ctx.fillRect(-15, 14, 7, 10);
-                ctx.fillRect(-5, 14, 7, 10);
-                ctx.fillRect(6, 14, 7, 10);
-                ctx.fillRect(16, 14, 7, 10);
-            } else {
-                const legPhase = this.runFrame * 0.2;
-                const legOffset1 = Math.sin(legPhase) * 6;
-                const legOffset2 = Math.sin(legPhase + Math.PI) * 6;
+                // ခုန်နေရင် ခြေထောက်တွေ ဆန့်ထား (ရှေ့နောက် အနေအထား)
+                ctx.save();
+                ctx.translate(-12, 14);
+                ctx.rotate(-0.2);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
                 
-                ctx.fillRect(-15, 14 + legOffset1, 7, 10);
-                ctx.fillRect(-5, 14 + legOffset2, 7, 10);
-                ctx.fillRect(6, 14 + legOffset2, 7, 10);
-                ctx.fillRect(16, 14 + legOffset1, 7, 10);
+                ctx.save();
+                ctx.translate(-4, 14);
+                ctx.rotate(0.2);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
+                
+                ctx.save();
+                ctx.translate(8, 14);
+                ctx.rotate(-0.2);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
+                
+                ctx.save();
+                ctx.translate(16, 14);
+                ctx.rotate(0.2);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
+            } else {
+                // ပြေးနေရင် ခြေထောက်တွေ ရှေ့နောက် လွှဲ (Swinging Motion)
+                const legPhase = this.runFrame * 0.15;
+                const legOffset1 = Math.sin(legPhase) * 0.25; // ရှေ့နောက် ထောင့်ပြောင်း
+                const legOffset2 = Math.sin(legPhase + Math.PI) * 0.25;
+                
+                // နောက်ခြေထောက် နှစ်ချောင်း (ဘယ်ဘက်)
+                ctx.save();
+                ctx.translate(-12, 14);
+                ctx.rotate(legOffset1);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
+                
+                ctx.save();
+                ctx.translate(-4, 14);
+                ctx.rotate(legOffset2);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
+                
+                // ရှေ့ခြေထောက် နှစ်ချောင်း (ညာဘက်)
+                ctx.save();
+                ctx.translate(8, 14);
+                ctx.rotate(legOffset2);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
+                
+                ctx.save();
+                ctx.translate(16, 14);
+                ctx.rotate(legOffset1);
+                ctx.fillRect(-3, -4, 7, 12);
+                ctx.restore();
             }
             
             ctx.shadowBlur = 0;
             
-            // Tail (အမြီး - ခန္ဓာကိုယ်ထဲမှာ ပါဝင်နေသလို ဝိုင်းဝိုင်းလေး)
+            // Tail (အမြီး)
             ctx.fillStyle = '#C68E4E';
             ctx.beginPath();
-            ctx.ellipse(-22, 4, 4, 4, 0, 0, Math.PI * 2); // ဝိုင်းဝိုင်းလေး
+            ctx.ellipse(-22, 4, 4, 4, 0, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.restore();
