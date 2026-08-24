@@ -2,13 +2,18 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Capybara Runner 🐹</title>
+    
+    <!-- ===== PWA Manifest ===== -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="image.png">
+    <meta name="theme-color" content="#16213e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #1a1a2e;
             display: flex;
@@ -17,6 +22,9 @@
             height: 100vh;
             font-family: 'Arial', sans-serif;
             overflow: hidden;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
         .game-wrapper {
             background: #16213e;
@@ -24,6 +32,8 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.8);
             border: 2px solid #e94560;
+            max-width: 860px;
+            width: 100%;
         }
         canvas {
             border: 3px solid #e94560;
@@ -31,6 +41,9 @@
             display: block;
             background: #87CEEB;
             cursor: pointer;
+            width: 100%;
+            height: auto;
+            touch-action: none;
         }
         .ui {
             display: flex;
@@ -40,6 +53,8 @@
             color: #eee;
             font-size: 18px;
             padding: 0 10px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .ui span {
             background: #0f3460;
@@ -57,11 +72,9 @@
             border-radius: 10px;
             cursor: pointer;
             transition: 0.3s;
+            touch-action: manipulation;
         }
-        .ui button:hover {
-            background: #ff6b81;
-            transform: scale(1.05);
-        }
+        .ui button:active { transform: scale(0.95); }
         .controls {
             color: #aaa;
             font-size: 14px;
@@ -75,11 +88,7 @@
             border: 1px solid #e94560;
             color: #fff;
         }
-        #gameOverMsg {
-            color: #ff6b6b;
-            font-weight: bold;
-            font-size: 22px;
-        }
+        #gameOverMsg { color: #ff6b6b; font-weight: bold; font-size: 22px; }
         .legend {
             display: flex;
             gap: 20px;
@@ -87,16 +96,40 @@
             margin-top: 8px;
             font-size: 13px;
             color: #ccc;
+            flex-wrap: wrap;
         }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-color { width: 20px; height: 16px; border-radius: 3px; }
+        
+        /* ===== Install Banner ===== */
+        .install-banner {
+            display: none;
+            background: linear-gradient(135deg, #e94560, #c23152);
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-top: 12px;
+            text-align: center;
+            color: #fff;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(233,69,96,0.3);
+            border: none;
         }
-        .legend-color {
-            width: 20px;
-            height: 16px;
-            border-radius: 3px;
+        .install-banner:hover { transform: scale(1.02); }
+        .install-banner:active { transform: scale(0.98); }
+        .install-banner.show { display: block; }
+        .install-banner .icon { font-size: 24px; margin-right: 12px; }
+        
+        @media (max-width: 600px) {
+            .game-wrapper { padding: 10px; border-radius: 10px; }
+            .ui { font-size: 14px; }
+            .ui span { padding: 6px 14px; }
+            .ui button { padding: 6px 16px; font-size: 14px; }
+            .controls { font-size: 12px; }
+            .legend { font-size: 11px; gap: 10px; }
+            .install-banner { font-size: 14px; padding: 12px 16px; }
         }
     </style>
 </head>
@@ -110,40 +143,63 @@
         <button onclick="restartGame()">🔄 Restart</button>
     </div>
     <div class="controls">
-        <kbd>Space</kbd> သို့ <kbd>↑</kbd> နှိပ်ပြီး ခုန်ပါ။
+        <kbd>Space</kbd> သို့ <kbd>↑</kbd> နှိပ်ပြီး ခုန်ပါ။<br>
+        <span style="font-size:12px;color:#888;">📱 Mobile: မျက်နှာပြင်ကို နှိပ်ပြီး ခုန်ပါ</span>
     </div>
     <div class="legend">
-        <div class="legend-item">
-            <div class="legend-color" style="background:#8D6E63;"></div>
-            <span>🧱 Jump </span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background:#4CAF50;"></div>
-            <span>🌿 Keep </span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background:linear-gradient(90deg,#8D6E63,#4CAF50);"></div>
-            <span>⚠️As You Like</span>
-        </div>
+        <div class="legend-item"><div class="legend-color" style="background:#8D6E63;"></div><span>🧱 Jump</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#4CAF50;"></div><span>🌿 Keep</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:linear-gradient(90deg,#8D6E63,#4CAF50);"></div><span>⚠️ As You Like</span></div>
+    </div>
+    
+    <!-- ===== Install Banner ===== -->
+    <div id="installBanner" class="install-banner">
+        <span class="icon">📲</span> အက်ပ်အဖြစ် ထည့်သွင်းရန် ဤနေရာကိုနှိပ်ပါ
     </div>
 </div>
 
 <script>
+    // =============================================
+    // ===== PWA INSTALL HANDLING =====
+    // =============================================
+    let deferredPrompt;
+    const installBanner = document.getElementById('installBanner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBanner.classList.add('show');
+        console.log('📲 Install prompt ready!');
+    });
+
+    installBanner.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const result = await deferredPrompt.userChoice;
+            if (result.outcome === 'accepted') {
+                console.log('✅ User accepted install');
+                installBanner.classList.remove('show');
+            } else {
+                console.log('❌ User declined install');
+            }
+            deferredPrompt = null;
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        console.log('🎉 App installed successfully!');
+        installBanner.classList.remove('show');
+    });
+
+    // =============================================
+    // ===== GAME CODE =====
+    // =============================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreDisplay = document.getElementById('scoreDisplay');
     const gameOverMsg = document.getElementById('gameOverMsg');
 
-    const capybaraImg = new Image();
-    capybaraImg.src = 'image.png';
-    let capybaraLoaded = false;
-    capybaraImg.onload = function() {
-        capybaraLoaded = true;
-    };
-    capybaraImg.onerror = function() {
-        capybaraLoaded = false;
-    };
-
+    // ===== Game State =====
     let gameRunning = true;
     let score = 0;
     let frame = 0;
@@ -153,6 +209,9 @@
     const JUMP_FORCE = -15.5;
     const GROUND_Y = 335;
 
+    // =============================================
+    // ===== ANIMATED CAPYBARA (Sprite Sheet) =====
+    // =============================================
     const capybara = {
         x: 80,
         y: 300,
@@ -163,98 +222,150 @@
         runFrame: 0,
 
         draw() {
-            if (capybaraLoaded) {
-                const drawY = this.y - 5;
-                ctx.drawImage(capybaraImg, this.x - 4, drawY, this.width + 8, this.height + 10);
-                if (this.isJumping) {
-                    ctx.save();
-                    ctx.translate(this.x + this.width/2, drawY + this.height/2);
-                    ctx.rotate(-0.1);
-                    ctx.drawImage(capybaraImg, -this.width/2 - 4, -this.height/2 - 5, this.width + 8, this.height + 10);
-                    ctx.restore();
-                }
+            const cx = this.x + this.width/2;
+            const cy = this.y + this.height/2 - 2;
+            
+            ctx.save();
+            ctx.translate(cx, cy);
+            
+            // ===== ပြေးနေတဲ့အခါ ခန္ဓာကိုယ် လှုပ်ရှားမှု =====
+            if (!this.isJumping) {
+                const bob = Math.sin(this.runFrame * 0.15) * 1.5;
+                const tilt = Math.sin(this.runFrame * 0.12) * 0.02;
+                ctx.translate(0, bob);
+                ctx.rotate(tilt);
             } else {
-                this.drawFallback();
+                ctx.rotate(-0.08);
             }
-        },
-
-        drawFallback() {
+            
+            // ===== Body =====
+            ctx.shadowColor = 'rgba(0,0,0,0.15)';
+            ctx.shadowBlur = 8;
+            
+            // Main body
             ctx.fillStyle = '#8B6B4A';
-            ctx.shadowColor = 'rgba(0,0,0,0.3)';
-            ctx.shadowBlur = 10;
             ctx.beginPath();
-            ctx.ellipse(this.x + 20, this.y + 15, 22, 18, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 2, 22, 16, 0, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
+            
+            // Head
             ctx.fillStyle = '#A67B5B';
+            ctx.shadowBlur = 4;
             ctx.beginPath();
-            ctx.ellipse(this.x + 35, this.y + 8, 14, 13, 0, 0, Math.PI * 2);
+            ctx.ellipse(14, -6, 14, 12, 0.1, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Ears
+            ctx.fillStyle = '#A67B5B';
+            ctx.shadowBlur = 2;
+            ctx.beginPath();
+            ctx.ellipse(8, -16, 5, 8, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(18, -16, 5, 8, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            
+            // Eyes
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(this.x + 40, this.y + 5, 6, 0, Math.PI * 2);
+            ctx.arc(18, -8, 6, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = '#1a1a2e';
             ctx.beginPath();
-            ctx.arc(this.x + 42, this.y + 4, 3, 0, Math.PI * 2);
+            ctx.arc(20, -9, 3.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(this.x + 43, this.y + 2, 1.5, 0, Math.PI * 2);
+            ctx.arc(21, -10.5, 1.5, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Eyebrows (happy)
             ctx.strokeStyle = '#3d2b1f';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(this.x + 38, this.y + 1, 5, Math.PI, 0);
+            ctx.arc(16, -12, 5, Math.PI, 0);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(this.x + 46, this.y + 1, 5, Math.PI, 0);
+            ctx.arc(24, -12, 5, Math.PI, 0);
             ctx.stroke();
+            
+            // Nose
             ctx.fillStyle = '#3d2b1f';
             ctx.beginPath();
-            ctx.arc(this.x + 46, this.y + 10, 3, 0, Math.PI * 2);
+            ctx.arc(26, -3, 3, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = '#2a1a0e';
             ctx.beginPath();
-            ctx.arc(this.x + 48, this.y + 10, 1.5, 0, Math.PI * 2);
+            ctx.arc(27.5, -3, 1.5, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Mouth (smile)
             ctx.strokeStyle = '#3d2b1f';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.arc(this.x + 44, this.y + 14, 4, 0.1, 0.6);
+            ctx.arc(24, 1, 4, 0.1, 0.6);
             ctx.stroke();
-            ctx.fillStyle = '#A67B5B';
-            ctx.beginPath();
-            ctx.ellipse(this.x + 28, this.y - 2, 5, 8, -0.3, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(this.x + 38, this.y - 2, 5, 8, 0.3, 0, Math.PI * 2);
-            ctx.fill();
+            
+            // ===== Legs (running animation) =====
             ctx.fillStyle = '#6B4F3A';
+            ctx.shadowBlur = 4;
+            
             if (this.isJumping) {
-                ctx.fillRect(this.x + 5, this.y + 22, 6, 6);
-                ctx.fillRect(this.x + 15, this.y + 22, 6, 6);
-                ctx.fillRect(this.x + 28, this.y + 22, 6, 6);
-                ctx.fillRect(this.x + 38, this.y + 22, 6, 6);
+                ctx.fillRect(-15, 12, 6, 8);
+                ctx.fillRect(-6, 12, 6, 8);
+                ctx.fillRect(6, 12, 6, 8);
+                ctx.fillRect(15, 12, 6, 8);
             } else {
-                const legOffset = Math.sin(this.runFrame * 0.2) * 6;
-                const legOffset2 = Math.sin(this.runFrame * 0.2 + Math.PI) * 6;
-                ctx.fillRect(this.x + 5, this.y + 28 + legOffset, 6, 8);
-                ctx.fillRect(this.x + 15, this.y + 28 + legOffset2, 6, 8);
-                ctx.fillRect(this.x + 28, this.y + 28 + legOffset2, 6, 8);
-                ctx.fillRect(this.x + 38, this.y + 28 + legOffset, 6, 8);
+                const legPhase = this.runFrame * 0.2;
+                const legOffset1 = Math.sin(legPhase) * 6;
+                const legOffset2 = Math.sin(legPhase + Math.PI) * 6;
+                
+                ctx.fillRect(-15, 12 + legOffset1, 6, 8);
+                ctx.fillRect(-6, 12 + legOffset2, 6, 8);
+                ctx.fillRect(6, 12 + legOffset2, 6, 8);
+                ctx.fillRect(15, 12 + legOffset1, 6, 8);
             }
+            
+            ctx.shadowBlur = 0;
+            
+            // Tail
             ctx.fillStyle = '#7A5A3A';
             ctx.beginPath();
-            ctx.ellipse(this.x - 2, this.y + 18, 6, 4, -0.5, 0, Math.PI * 2);
+            ctx.ellipse(-22, 4, 6, 4, -0.5, 0, Math.PI * 2);
             ctx.fill();
-            if (!this.isJumping && frame % 8 < 4) {
-                ctx.fillStyle = 'rgba(100,200,255,0.4)';
+            
+            ctx.restore();
+            
+            // ===== Running effects =====
+            if (!this.isJumping && this.runFrame % 3 < 1.5) {
+                ctx.fillStyle = 'rgba(200,200,200,0.12)';
+                for (let i = 0; i < 2; i++) {
+                    const dx = -8 - i * 10 + Math.sin(this.runFrame * 0.1 + i * 2) * 2;
+                    const dy = 14 + i * 3 + Math.sin(this.runFrame * 0.15 + i * 3) * 2;
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + dx, this.y + dy, 5 - i * 1.5, 2 - i * 0.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // ===== Jump shadow =====
+            if (this.isJumping) {
+                ctx.fillStyle = 'rgba(0,0,0,0.08)';
                 ctx.beginPath();
-                ctx.arc(this.x - 5, this.y + 2, 3, 0, Math.PI * 2);
+                ctx.ellipse(this.x + this.width/2, this.y + this.height + 6, 16, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // ===== Sweat drops when running =====
+            if (!this.isJumping && this.runFrame % 4 < 2) {
+                ctx.fillStyle = 'rgba(100,200,255,0.2)';
+                ctx.beginPath();
+                ctx.arc(this.x - 12, this.y + 2, 3, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.beginPath();
-                ctx.arc(this.x - 10, this.y + 8, 2, 0, Math.PI * 2);
+                ctx.arc(this.x - 16, this.y + 8, 2, 0, Math.PI * 2);
                 ctx.fill();
             }
         },
@@ -289,12 +400,8 @@
         }
     };
 
-    const OBSTACLE_TYPES = {
-        WALL: 'wall',
-        BUSH: 'bush',
-        DOUBLE: 'double'
-    };
-
+    // ===== Obstacles =====
+    const OBSTACLE_TYPES = { WALL: 'wall', BUSH: 'bush', DOUBLE: 'double' };
     let obstacles = [];
 
     class Obstacle {
@@ -303,51 +410,16 @@
             this.x = 820;
             this.passed = false;
             this.parts = [];
-            
             switch(type) {
                 case OBSTACLE_TYPES.WALL:
-                    this.parts.push({
-                        x: 0,
-                        width: 30,
-                        height: 75,
-                        y: 0,
-                        requiresJump: true,
-                        color: '#8D6E63',
-                        label: '🧱'
-                    });
+                    this.parts.push({ x: 0, width: 30, height: 75, y: 0, requiresJump: true, label: '🧱' });
                     break;
-                    
                 case OBSTACLE_TYPES.BUSH:
-                    this.parts.push({
-                        x: 0,
-                        width: 50,
-                        height: 30,
-                        y: 60,              // ပိုမြင့်အောင်
-                        requiresJump: false,
-                        color: '#4CAF50',
-                        label: '🌿'
-                    });
+                    this.parts.push({ x: 0, width: 50, height: 30, y: 60, requiresJump: false, label: '🌿' });
                     break;
-                    
                 case OBSTACLE_TYPES.DOUBLE:
-                    this.parts.push({
-                        x: 0,
-                        width: 30,
-                        height: 75,
-                        y: 0,
-                        requiresJump: true,
-                        color: '#8D6E63',
-                        label: '🧱'
-                    });
-                    this.parts.push({
-                        x: 50,
-                        width: 45,
-                        height: 30,
-                        y: 70,              //adjust height to make it more challenging
-                        requiresJump: false,
-                        color: '#4CAF50',
-                        label: '🌿'
-                    });
+                    this.parts.push({ x: 0, width: 30, height: 75, y: 0, requiresJump: true, label: '🧱' });
+                    this.parts.push({ x: 50, width: 45, height: 30, y: 70, requiresJump: false, label: '🌿' });
                     break;
             }
         }
@@ -356,10 +428,8 @@
             this.parts.forEach(part => {
                 const px = this.x + part.x;
                 const py = GROUND_Y - part.height - (part.y || 0);
-                
                 ctx.shadowColor = 'rgba(0,0,0,0.2)';
                 ctx.shadowBlur = 6;
-                
                 if (part.requiresJump) {
                     const grad = ctx.createLinearGradient(px, py, px + part.width, py);
                     grad.addColorStop(0, '#8D6E63');
@@ -367,11 +437,9 @@
                     grad.addColorStop(1, '#8D6E63');
                     ctx.fillStyle = grad;
                     ctx.fillRect(px, py, part.width, part.height);
-                    
                     ctx.shadowBlur = 0;
                     ctx.strokeStyle = '#5D4037';
                     ctx.lineWidth = 1.5;
-                    
                     for (let row = 0; row < 6; row++) {
                         const ry = py + row * 13;
                         ctx.beginPath();
@@ -379,7 +447,6 @@
                         ctx.lineTo(px + part.width, ry);
                         ctx.stroke();
                     }
-                    
                     for (let row = 0; row < 6; row++) {
                         const offset = row % 2 === 0 ? 0 : part.width / 2;
                         for (let col = 0; col < 2; col++) {
@@ -391,32 +458,25 @@
                             ctx.stroke();
                         }
                     }
-                    
                     ctx.fillStyle = '#4E342E';
                     ctx.fillRect(px, py + part.height - 2, part.width, 2);
-                    
                     if (this.x < 400) {
                         ctx.fillStyle = `rgba(255,0,0,${0.08 + (1 - this.x/400) * 0.12})`;
                         ctx.fillRect(px - 5, py - 5, part.width + 10, part.height + 10);
                     }
-                    
                 } else {
-                    // ===== မြက်ခုပ် (ပိုမြင့်တဲ့နေရာ) =====
                     ctx.fillStyle = '#388E3C';
                     ctx.beginPath();
                     ctx.ellipse(px + part.width/2, py + part.height/2 + 2, part.width/2.2, part.height/2.2, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    
                     ctx.fillStyle = '#43A047';
                     ctx.beginPath();
                     ctx.ellipse(px + part.width/3, py + part.height/2 - 2, part.width/4.5, part.height/3.5, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    
                     ctx.fillStyle = '#66BB6A';
                     ctx.beginPath();
                     ctx.ellipse(px + part.width*2/3, py + part.height/2 + 4, part.width/4.5, part.height/3.8, 0, 0, Math.PI * 2);
                     ctx.fill();
-                    
                     ctx.fillStyle = '#FF6B6B';
                     ctx.beginPath();
                     ctx.arc(px + 10, py + 14, 4, 0, Math.PI * 2);
@@ -425,7 +485,6 @@
                     ctx.beginPath();
                     ctx.arc(px + 10, py + 14, 2, 0, Math.PI * 2);
                     ctx.fill();
-                    
                     ctx.fillStyle = '#FF6B6B';
                     ctx.beginPath();
                     ctx.arc(px + 35, py + 10, 3, 0, Math.PI * 2);
@@ -434,12 +493,9 @@
                     ctx.beginPath();
                     ctx.arc(px + 35, py + 10, 1.5, 0, Math.PI * 2);
                     ctx.fill();
-                    
-                    // အောက်ခြေမှာ သတိပေးလိုင်း
                     ctx.fillStyle = 'rgba(255,0,0,0.15)';
                     ctx.fillRect(px, py + part.height - 2, part.width, 2);
                 }
-                
                 ctx.shadowBlur = 0;
                 ctx.font = '18px Arial';
                 ctx.textAlign = 'center';
@@ -447,44 +503,29 @@
                 ctx.fillStyle = 'rgba(255,255,255,0.9)';
                 ctx.fillText(part.label, px + part.width/2, py - 5);
             });
-            
             ctx.shadowBlur = 0;
         }
 
-        update() {
-            this.x -= speed;
-        }
-
+        update() { this.x -= speed; }
         getPartsBounds() {
             return this.parts.map(part => {
                 const px = this.x + part.x;
                 const py = GROUND_Y - part.height - (part.y || 0);
-                return {
-                    x: px + 2,
-                    y: py + 2,
-                    width: part.width - 4,
-                    height: part.height - 4,
-                    requiresJump: part.requiresJump
-                };
+                return { x: px + 2, y: py + 2, width: part.width - 4, height: part.height - 4, requiresJump: part.requiresJump };
             });
         }
-
-        isOffScreen() {
-            return this.x < -100;
-        }
-        
+        isOffScreen() { return this.x < -100; }
         isFullyPassed(capX) {
             const lastPart = this.parts[this.parts.length - 1];
             return capX > this.x + lastPart.x + lastPart.width + 10;
         }
     }
 
+    // ===== Ground & Background =====
     let groundOffset = 0;
-
     function drawGround() {
         ctx.fillStyle = '#5D8A3C';
         ctx.fillRect(0, GROUND_Y, 800, 65);
-        
         ctx.fillStyle = '#7CB342';
         for (let i = 0; i < 20; i++) {
             const x = (i * 42 + groundOffset) % 820 - 20;
@@ -495,10 +536,8 @@
             ctx.closePath();
             ctx.fill();
         }
-
         ctx.fillStyle = '#4A7A2A';
         ctx.fillRect(0, GROUND_Y + 2, 800, 3);
-        
         groundOffset = (groundOffset - speed) % 42;
     }
 
@@ -508,7 +547,6 @@
         gradient.addColorStop(1, '#87CEEB');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 800, GROUND_Y);
-
         ctx.fillStyle = '#FFD93D';
         ctx.shadowColor = '#FFD93D';
         ctx.shadowBlur = 40;
@@ -516,7 +554,6 @@
         ctx.arc(720, 50, 40, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
-
         ctx.fillStyle = 'rgba(255,255,255,0.7)';
         const cloudX = (frame * 0.3) % 900 - 100;
         ctx.beginPath();
@@ -524,7 +561,6 @@
         ctx.arc(cloudX + 30, 50, 25, 0, Math.PI * 2);
         ctx.arc(cloudX + 55, 60, 28, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.beginPath();
         ctx.arc(cloudX + 300, 100, 25, 0, Math.PI * 2);
         ctx.arc(cloudX + 325, 90, 20, 0, Math.PI * 2);
@@ -533,76 +569,52 @@
     }
 
     function rectCollide(r1, r2) {
-        return r1.x < r2.x + r2.width &&
-               r1.x + r1.width > r2.x &&
-               r1.y < r2.y + r2.height &&
-               r1.y + r1.height > r2.y;
+        return r1.x < r2.x + r2.width && r1.x + r1.width > r2.x &&
+               r1.y < r2.y + r2.height && r1.y + r1.height > r2.y;
     }
 
     function spawnObstacle() {
         const level = Math.floor(score / 100);
         let types = [OBSTACLE_TYPES.WALL, OBSTACLE_TYPES.BUSH];
-        if (level >= 2) {
-            types.push(OBSTACLE_TYPES.DOUBLE);
-        }
-        if (level >= 4) {
-            types.push(OBSTACLE_TYPES.DOUBLE);
-            types.push(OBSTACLE_TYPES.DOUBLE);
-        }
-        const randomType = types[Math.floor(Math.random() * types.length)];
-        obstacles.push(new Obstacle(randomType));
+        if (level >= 2) types.push(OBSTACLE_TYPES.DOUBLE);
+        if (level >= 4) { types.push(OBSTACLE_TYPES.DOUBLE); types.push(OBSTACLE_TYPES.DOUBLE); }
+        obstacles.push(new Obstacle(types[Math.floor(Math.random() * types.length)]));
     }
 
     function restartGame() {
-        gameRunning = true;
-        score = 0;
-        speed = 4;
-        frame = 0;
-        spawnCounter = 0;
+        gameRunning = true; score = 0; speed = 4; frame = 0; spawnCounter = 0;
         obstacles = [];
-        capybara.y = 300;
-        capybara.vy = 0;
-        capybara.isJumping = false;
-        capybara.runFrame = 0;
+        capybara.y = 300; capybara.vy = 0; capybara.isJumping = false; capybara.runFrame = 0;
         gameOverMsg.textContent = '';
         document.getElementById('scoreDisplay').textContent = '0';
     }
 
-    function gameOver() {
-        gameRunning = false;
-        gameOverMsg.textContent = '💀 Game Over!';
-    }
+    function gameOver() { gameRunning = false; gameOverMsg.textContent = '💀 Game Over!'; }
 
+    // ===== Controls (Keyboard + Touch) =====
     document.addEventListener('keydown', (e) => {
         if (e.key === ' ' || e.key === 'ArrowUp') {
             e.preventDefault();
-            if (!gameRunning) {
-                restartGame();
-                return;
-            }
+            if (!gameRunning) { restartGame(); return; }
             capybara.jump();
         }
     });
 
-    canvas.addEventListener('click', () => {
-        if (!gameRunning) {
-            restartGame();
-        } else {
-            capybara.jump();
-        }
+    canvas.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!gameRunning) { restartGame(); } else { capybara.jump(); }
     });
+
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!gameRunning) { restartGame(); } else { capybara.jump(); }
+    }, { passive: false });
 
     function update() {
         if (!gameRunning) return;
-
         frame++;
-        if (frame % 6 === 0) {
-            score++;
-            scoreDisplay.textContent = score;
-        }
-        if (frame % 400 === 0 && speed < 12) {
-            speed += 0.5;
-        }
+        if (frame % 6 === 0) { score++; scoreDisplay.textContent = score; }
+        if (frame % 400 === 0 && speed < 12) speed += 0.5;
 
         spawnCounter++;
         const spawnInterval = Math.max(50, 80 - Math.floor(score / 50));
@@ -617,10 +629,7 @@
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const obs = obstacles[i];
             obs.update();
-            if (obs.isOffScreen()) {
-                obstacles.splice(i, 1);
-                continue;
-            }
+            if (obs.isOffScreen()) { obstacles.splice(i, 1); continue; }
             const parts = obs.getPartsBounds();
             for (const part of parts) {
                 if (rectCollide(cap, part)) {
@@ -628,16 +637,9 @@
                         const capBottom = cap.y + cap.height;
                         const partTop = part.y;
                         const isJumpingOver = (capBottom - 5 < partTop + 8);
-                        if (!isJumpingOver) {
-                            gameOver();
-                            return;
-                        }
+                        if (!isJumpingOver) { gameOver(); return; }
                     } else {
-                        // ===== မြက်ခုပ် - ခုန်ရင် Game Over =====
-                        if (capybara.isJumping) {
-                            gameOver();
-                            return;
-                        }
+                        if (capybara.isJumping) { gameOver(); return; }
                     }
                 }
             }
